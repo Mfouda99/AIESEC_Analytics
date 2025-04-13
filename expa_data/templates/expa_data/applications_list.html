@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Funnel Dashboard</title>
+</head>
+<body>
+    <h1>Funnel Numerical Data</h1>
+    <table border="1">
+        <tr>
+            <th>Status</th>
+            <th>Count</th>
+        </tr>
+        {% for status, count in funnel_data.items %}
+        <tr>
+            <td>{{ status }}</td>
+            <td>{{ count }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+</body>
+</html>

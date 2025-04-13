@@ -1,0 +1,1742 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>ICX Analytics</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://unpkg.com/boxicons@2.0.7/css/boxicons.min.css" rel="stylesheet" />
+  {% load static %}
+
+  <style>
+    :root {
+      --primary: #0a3d62;
+      --primary-light: #1e5a8a;
+      --secondary: #00b4d8;
+      --accent: #90e0ef;
+      --dark: #0d1b2a;
+      --light: #e0f2f1;
+      --white: #ffffff;
+      --success: #2ca02c;
+      --warning: #ff7f0e;
+      --danger: #d62728;
+      --info: #9467bd;
+      
+      --sidebar-width: 280px;
+      --sidebar-collapsed: 80px;
+      --transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.1);
+      
+      --card-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+      --card-hover: 0 12px 40px rgba(0, 180, 216, 0.15);
+      --neumorphic-shadow: 8px 8px 16px #d1d9e6, -8px -8px 16px #ffffff;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: linear-gradient(135deg, #f0f8ff 0%, #e6f7ff 100%);
+      color: var(--dark);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* Enhanced Sidebar */
+    .sidebar {
+      position: fixed;
+      height: 100vh;
+      width: var(--sidebar-width);
+      background: var(--primary);
+      transition: var(--transition);
+      overflow-y: auto;
+      z-index: 1000;
+      box-shadow: 4px 0 20px rgba(0, 0, 0, 0.1);
+      display: flex;
+      flex-direction: column;
+    }
+
+    .sidebar.close {
+      width: var(--sidebar-collapsed);
+    }
+
+    .logo-details {
+      height: 80px;
+      min-height: 80px;
+      display: flex;
+      align-items: center;
+      padding: 0 20px;
+      position: relative;
+      transition: var(--transition);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      flex-shrink: 0;
+    }
+
+    .sidebar.close .logo-details {
+      padding: 0 10px;
+    }
+
+    .logo-details i {
+      font-size: 30px;
+      color: var(--white);
+      min-width: 50px;
+      transition: var(--transition);
+      text-align: center;
+    }
+
+    .logo-icon {
+      height: 45px;
+      width: 45px;
+      margin-right: 15px;
+      transition: var(--transition);
+      filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
+      flex-shrink: 0;
+    }
+
+    .sidebar.close .logo-icon {
+      margin-right: 0;
+      transform: scale(0.9);
+    }
+
+    .logo_name {
+      font-size: 22px;
+      color: var(--white);
+      font-weight: 700;
+      white-space: nowrap;
+      opacity: 1;
+      transition: var(--transition);
+      letter-spacing: 0.5px;
+      overflow: hidden;
+    }
+
+    .sidebar.close .logo_name {
+      opacity: 0;
+      width: 0;
+      margin: 0;
+    }
+
+    .nav-links {
+      flex: 1;
+      overflow-y: auto;
+      padding: 20px 10px;
+      margin: 0;
+      scrollbar-width: thin;
+      scrollbar-color: var(--primary-light) var(--primary);
+    }
+
+    .nav-links::-webkit-scrollbar {
+      width: 5px;
+    }
+
+    .nav-links::-webkit-scrollbar-track {
+      background: var(--primary);
+    }
+
+    .nav-links::-webkit-scrollbar-thumb {
+      background-color: var(--primary-light);
+      border-radius: 5px;
+    }
+
+    .nav-links li {
+      position: relative;
+      list-style: none;
+      height: 50px;
+      line-height: 50px;
+      margin: 5px 0;
+      padding: 0 15px;
+      border-radius: 8px;
+      transition: var(--transition);
+    }
+
+    .sidebar.close .nav-links li {
+      padding: 0 10px;
+      justify-content: center;
+    }
+
+    .nav-links li:hover {
+      background: var(--primary-light);
+    }
+
+    .nav-links li.active {
+      background: var(--secondary);
+    }
+
+    .nav-links li a {
+      display: flex;
+      align-items: center;
+      text-decoration: none;
+      color: var(--white);
+      transition: var(--transition);
+      height: 100%;
+      width: 100%;
+    }
+
+    .nav-links li i {
+      font-size: 22px;
+      min-width: 70px;
+      text-align: center;
+      transition: var(--transition);
+    }
+
+    .sidebar.close .nav-links li i {
+      min-width: auto;
+      font-size: 24px;
+    }
+
+    .link_name {
+      font-weight: 500;
+      letter-spacing: 0.5px;
+      white-space: nowrap;
+      transition: var(--transition);
+    }
+
+    .sidebar.close .link_name {
+      opacity: 0;
+      width: 0;
+      height: 0;
+      overflow: hidden;
+    }
+
+    .sub-menu {
+      padding-left: 20px;
+      background: var(--primary-light);
+      border-radius: 8px;
+      display: none;
+      transition: var(--transition);
+      margin: 5px 0;
+      overflow: hidden;
+    }
+
+    .sidebar.close .sub-menu {
+      display: none !important;
+    }
+
+    /* Submenu arrow */
+    .arrow {
+      position: absolute;
+      right: 15px;
+      top: 50%;
+      transform: translateY(-50%);
+      transition: var(--transition);
+      color: var(--white);
+      font-size: 18px;
+      cursor: pointer;
+    }
+    
+    .sidebar.close .arrow {
+      display: none;
+    }
+    
+    li.showMenu .sub-menu {
+      display: block;
+    }
+    
+    li.showMenu .arrow {
+      transform: translateY(-50%) rotate(180deg);
+    }
+
+    /* Sidebar Toggle Indicator */
+    .sidebar-toggle-indicator {
+      position: absolute;
+      right: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--white);
+      opacity: 0.7;
+      transition: var(--transition);
+    }
+
+    .sidebar.close .sidebar-toggle-indicator {
+      display: none;
+    }
+
+    /* Main Content Area */
+    .home-section {
+      position: relative;
+      left: var(--sidebar-collapsed); /* Start with collapsed sidebar */
+      width: calc(100% - var(--sidebar-collapsed));
+      transition: var(--transition);
+      padding: 15px; /* Less padding */
+      min-height: 100vh;
+    }
+
+    .sidebar.open ~ .home-section {
+      left: var(--sidebar-width);
+      width: calc(100% - var(--sidebar-width));
+    }
+
+    .home-content {
+      display: flex;
+      align-items: center;
+      gap: 10px; /* Less gap */
+      font-size: 20px; /* Smaller font */
+      font-weight: 700;
+      color: var(--dark);
+      margin-bottom: 20px; /* Less margin */
+    }
+
+    .home-content i {
+      font-size: 24px; /* Smaller icon */
+      cursor: pointer;
+      color: var(--primary);
+      transition: all 0.3s ease;
+    }
+
+    .text {
+      white-space: nowrap;
+      background: linear-gradient(90deg, var(--primary), var(--secondary));
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      font-weight: 700;
+      font-size: 18px; /* Smaller text */
+    }
+
+    /* Modern Cards */
+    .card {
+      margin: 20px 0; /* Less margin */
+      background: var(--white);
+      padding: 20px; /* Less padding */
+      border-radius: 12px; /* Slightly smaller radius */
+      box-shadow: var(--card-shadow);
+      transition: var(--transition);
+      border: 1px solid rgba(0, 0, 0, 0.05);
+    }
+
+    .card:hover {
+      box-shadow: var(--card-hover);
+      transform: translateY(-5px);
+    }
+
+    .card h3 {
+      font-size: 18px; /* Smaller heading */
+      margin-bottom: 15px; /* Less margin */
+      color: var(--primary);
+      position: relative;
+      padding-bottom: 8px; /* Less padding */
+    }
+
+    .card h3::after {
+      content: '';
+      position: absolute;
+      left: 0;
+      bottom: 0;
+      width: 40px; /* Shorter underline */
+      height: 2px; /* Thinner line */
+    }
+
+    /* Enhanced Tables */
+    .table-responsive {
+      width: 100%;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
+      margin: 15px 0;
+    }
+
+    .styled-table {
+      width: 100%;
+      min-width: 600px; /* Minimum width for scrollable tables */
+      border-collapse: separate;
+      border-spacing: 0;
+      font-size: 13px; /* Smaller font */
+      text-align: center;
+      overflow: hidden;
+      border-radius: 10px; /* Smaller radius */
+    }
+
+
+    .styled-table th, .styled-table td {
+      padding: 14px 16px;
+      border: 1px solid rgba(0, 0, 0, 0.05);
+    }
+
+    .styled-table thead {
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+      color: var(--white);
+      position: sticky;
+      top: 0;
+    }
+
+    .styled-table th {
+      font-weight: 600;
+      letter-spacing: 0.3px; /* Less spacing */
+      text-transform: uppercase;
+      font-size: 12px; /* Smaller font */
+    }
+
+
+    .styled-table tbody tr:nth-child(even) {
+      background-color: rgba(240, 248, 255, 0.5);
+    }
+
+    /* Chart Containers */
+    .chart-container {
+      width: 100%;
+      height: 300px; /* Shorter height */
+      background: var(--white);
+      border-radius: 12px; /* Smaller radius */
+      padding: 15px; /* Less padding */
+      margin: 20px 0; /* Less margin */
+      box-shadow: var(--card-shadow);
+      transition: var(--transition);
+      display: flex;
+      flex-direction: column;
+    }
+
+    .chart-header {
+      margin-bottom: 15px; /* Less margin */
+    }
+
+    .chart-wrapper {
+      flex: 1;
+      position: relative;
+      width: 100%;
+      height: calc(100% - 50px); /* Account for smaller header */
+      min-height: 200px; /* Smaller minimum height */
+    }
+
+    .chart-container h3 {
+      font-size: 16px; /* Smaller heading */
+      margin-bottom: -50px; /* Adjusted margin */
+    }
+
+
+    /* Stage Selector Dropdown */
+    .stage-selector {
+      margin-top: 30px; /* Less margin */
+      margin-left: 0; /* Reset left margin */
+      display: flex;
+      flex-wrap: wrap; /* Allow wrapping on small screens */
+      align-items: center;
+      gap: 10px; /* Less gap */
+      justify-content: flex-start; /* Align left */
+    }
+
+    .stage-selector label {
+      font-weight: 600;
+      color: var(--primary);
+      font-size: 13px; /* Smaller label */
+    }
+
+
+    .stage-selector select {
+      padding: 8px 15px;
+      border-radius: 8px;
+      border: 1px solid #ddd;
+      background-color: white;
+      font-family: 'Inter', sans-serif;
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    }
+
+    .stage-selector select:hover {
+      border-color: var(--secondary);
+    }
+
+    .stage-selector select:focus {
+      outline: none;
+      border-color: var(--secondary);
+      box-shadow: 0 0 0 2px rgba(0, 180, 216, 0.2);
+    }
+
+    /* View All Button */
+    .view-all-btn {
+      padding: 8px 15px;
+      background-color: var(--primary);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-family: 'Inter', sans-serif;
+      font-size: 14px;
+      transition: all 0.3s ease;
+    }
+
+    .view-all-btn:hover {
+      background-color: var(--primary-light);
+      transform: translateY(-2px);
+    }
+
+    /* Add to your existing CSS */
+    #process-time-table {
+      width: 100%;
+      text-align: center;
+    }
+    
+    #process-time-table th {
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+      color: white;
+      padding: 12px;
+    }
+    
+    #process-time-table th[rowspan="2"] {
+      vertical-align: middle;
+    }
+    
+    #process-time-table td {
+      padding: 12px;
+      border: 1px solid rgba(0, 0, 0, 0.05);
+    }
+    
+    #process-time-table tr:nth-child(even) {
+      background-color: rgba(240, 248, 255, 0.5);
+    }
+    
+    #process-time-table tr:hover {
+      background-color: rgba(0, 180, 216, 0.05);
+      transform: scale(1.005);
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    }
+    
+    #process-time-table td:first-child {
+      font-weight: 600;
+      text-align: left;
+    }
+
+    /* Slot Tables */
+    .slot-table {
+      width: 100%;
+      margin-top: 20px;
+      border-collapse: collapse;
+    }
+    
+    .slot-table th {
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+      color: white;
+      padding: 12px;
+      text-align: center;
+    }
+    
+    .slot-table td {
+      padding: 12px;
+      border: 1px solid rgba(0, 0, 0, 0.05);
+      text-align: center;
+    }
+    
+    .slot-table tr:nth-child(even) {
+      background-color: rgba(240, 248, 255, 0.5);
+    }
+    
+    .slot-table tr:hover {
+      background-color: rgba(0, 180, 216, 0.05);
+    }
+    
+    .slot-table .project-name {
+      text-align: left;
+      font-weight: 600;
+    }
+    
+    .progress-cell {
+      position: relative;
+    }
+    
+    .progress-bar {
+      position: absolute;
+      left: 0;
+      top: 0;
+      height: 100%;
+      background-color: rgba(0, 180, 216, 0.2);
+      z-index: 1;
+    }
+    
+    
+    
+    .section-title {
+      font-size: 24px;
+      margin: 40px 0 20px;
+      color: var(--primary);
+      padding-bottom: 10px;
+      border-bottom: 2px solid var(--secondary);
+    }
+
+    .mobile-menu-toggle {
+      display: none;
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      z-index: 1100;
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      background: var(--primary);
+      color: white;
+      border: none;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+    }
+
+    
+
+    @keyframes spin {
+      to { transform: translate(-50%, -50%) rotate(360deg); }
+    }
+
+    /* Media Queries for Larger Screens */
+    @media (min-width: 768px) {
+      body {
+        font-size: 15px; /* Slightly larger base font */
+      }
+
+      .sidebar {
+        width: var(--sidebar-width); /* Full sidebar by default */
+      }
+
+      .sidebar.close {
+        width: var(--sidebar-collapsed);
+      }
+
+      .home-section {
+        left: var(--sidebar-width);
+        width: calc(100% - var(--sidebar-width));
+        padding: 20px;
+      }
+
+      .sidebar.close ~ .home-section {
+        left: var(--sidebar-collapsed);
+        width: calc(100% - var(--sidebar-collapsed));
+      }
+
+      .home-content {
+        font-size: 24px;
+      }
+
+      .text {
+        font-size: 22px;
+      }
+
+      .card {
+        padding: 25px;
+      }
+
+      .card h3 {
+        font-size: 20px;
+      }
+
+      .chart-container {
+        height: 350px;
+      }
+
+      .stage-selector {
+        margin-left: auto; /* Push to right */
+        justify-content: flex-end; /* Align right */
+      }
+    }
+
+    @media (min-width: 992px) {
+      .sidebar {
+        width: var(--sidebar-width);
+      }
+
+      
+
+      .home-content {
+        font-size: 28px;
+      }
+
+      .text {
+        font-size: 26px;
+      }
+
+      .chart-container {
+        height: 400px;
+      }
+    }
+
+    /* Mobile-specific styles */
+    @media (max-width: 767px) {
+      /* Show mobile menu toggle button */
+      .mobile-menu-toggle {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      /* Adjust table font sizes for better fit */
+      .styled-table {
+        font-size: 12px;
+      }
+
+      .styled-table th, 
+      .styled-table td {
+        padding: 8px 10px;
+      }
+
+      /* Stack stage selector elements vertically */
+      .stage-selector {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+      }
+
+      /* Make cards full width with less padding */
+      .card {
+        margin: 15px -15px;
+        border-radius: 0;
+        padding: 15px;
+      }
+
+      /* Adjust chart container for mobile */
+      .chart-container {
+        margin: 15px -15px;
+        border-radius: 0;
+      }
+
+      /* Hide sidebar by default on mobile */
+      .sidebar {
+        transform: translateX(-100%);
+        width: 280px;
+      }
+
+      .sidebar.open {
+        transform: translateX(0);
+        height: 100%;
+
+      }
+
+      .home-section {
+        left: 0;
+        width: 100%;
+      }
+
+      .stage-selector {
+        margin-top: 35px; /* Less margin */
+        margin-left: 500px; /* Reset left margin */
+        display: flex;
+        flex-wrap: wrap; /* Allow wrapping on small screens */
+        align-items: center;
+        gap: 10px; /* Less gap */
+        justify-content: flex-start; /* Align left */
+      }
+  
+      .stage-selector label {
+        font-weight: 600;
+        position:absolute;
+        left:60%;
+        margin-top: 9px; /* Less margin */
+
+        color: var(--primary);
+        font-size: 13px; /* Smaller label */
+      }
+      .mobile-menu-toggle {
+        display: flex;
+      }
+      
+      .sidebar {
+        transform: translateX(-100%);
+        width: 280px;
+      }
+      
+      .sidebar.open {
+        transform: translateX(0);
+      }
+      .chart-container {
+        margin: 25px 0px;
+
+        height: 400px;
+        align-item:center;
+
+      }
+    }
+    
+    
+
+    /* Very small mobile devices */
+    @media (max-width: 480px) {
+      .home-content {
+        font-size: 18px;
+      }
+      .card {
+        margin: 25px 5px;
+        border-radius: 0;
+      }
+      
+      .stage-selector {
+        margin-top: 90px; /* Less margin */
+        margin-left: 0; /* Reset left margin */
+        display: flex;
+        flex-wrap: wrap; /* Allow wrapping on small screens */
+        align-items: center;
+        gap: 10px; /* Less gap */
+        justify-content: flex-start; /* Align left */
+      }
+  
+      .stage-selector label {
+        font-weight: 600;
+        position:absolute;
+        left:10%;
+        color: var(--primary);
+        font-size: 13px; /* Smaller label */
+      }
+  
+      .stage-selector select {
+        padding: 6px 12px; /* Less padding */
+        border-radius: 6px; /* Smaller radius */
+        font-size: 13px; /* Smaller font */
+      }
+  
+      /* View All Button */
+      .view-all-btn {
+        padding: 6px 12px; /* Less padding */
+        font-size: 13px; /* Smaller font */
+        border-radius: 6px; /* Smaller radius */
+      }
+
+      .text {
+        font-size: 16px;
+      }
+
+      .card h3 {
+        font-size: 16px;
+      }
+
+      .chart-container {
+        margin: 25px 0px;
+
+        height: 550px;
+        align-item:center;
+
+      }
+    }
+    
+  </style>
+</head>
+
+<body>
+  <div class="sidebar close">
+    <div class="logo-details">
+      <img src="{% static 'image/blueman.png' %}" class="logo-icon" alt="AIESEC Logo" />
+      <span class="logo_name">AIESEC in Egypt</span>
+    </div>
+  
+    <ul class="nav-links">
+      <li class="active">
+        <a href="/">
+          <i class="bx bx-grid-alt"></i>
+          <span class="link_name">Dashboard</span>
+        </a>
+        <ul class="sub-menu blank">
+          <li><a class="link_name" href="/">Dashboard</a></li>
+        </ul>
+      </li>
+      
+      <li>
+        <div class="iocn-link">
+          <a href="#">
+            <i class="bx bx-line-chart"></i>
+            <span class="link_name">Analytics</span>
+          </a>
+          <i class="bx bxs-chevron-down arrow"></i>
+        </div>
+        <ul class="sub-menu">
+          <li><a href="/analytics_OGX/">OGX Analytics</a></li>
+          <li><a href="/analytics_ICX/">ICX Analytics</a></li>
+        </ul>
+      </li>
+    </ul>
+  </div>
+
+  <section class="home-section">
+    <div class="home-content">
+      <i class="bx bx-menu tooltip">
+      </i>
+      <span class="text">AIESEC in Tanta ICX Analytics</span>
+    </div>
+
+    <!-- IGV Section -->
+    <h2 class="section-title">IGV Performance</h2>
+    
+    <!-- IGV Funnel Table -->
+    <div class="card">
+      <h3>IGV Funnel Overview</h3>
+      <div class="table-responsive">
+        <table class="styled-table" id="igv-funnel-table">
+          <thead>
+            <tr>
+              <th>APP</th>
+              <th>APP ➝ ACC</th>
+              <th>ACC</th>
+              <th>ACC ➝ APD</th>
+              <th>APD</th>
+              <th>APD ➝ REA</th>
+              <th>REA</th>
+              <th>REA ➝ Finished</th>
+              <th>Finished</th>
+              <th>Finished ➝ COMP</th>
+              <th>COMP</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr id="igv-funnel-row" class="loading">
+              <td colspan="11">Loading data...</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- IGV Timeline Chart -->
+    <div class="chart-container">
+      <div class="chart-header">
+        <h3>IGV Stage Timeline (Peaks Over Time)</h3>
+        <div class="stage-selector">
+          <label for="igv-stage-select">View Stage:</label>
+          <select id="igv-stage-select">
+            <option value="all">All Stages</option>
+            <option value="APP">Application (APP)</option>
+            <option value="ACC">Accepted (ACC)</option>
+            <option value="APD">Approved (APD)</option>
+            <option value="REA">Realization (REA)</option>
+          </select>
+          <button class="view-all-btn" id="igv-view-all">View All</button>
+        </div>
+      </div>
+      <div class="chart-wrapper">
+        <canvas id="igvTimelineChart" class="chart-canvas"></canvas>
+      </div>
+    </div>
+
+    <!-- IGV Slots Table -->
+    <div class="card">
+      <h3>IGV Projects Slot Performance</h3>
+      <div class="table-responsive">
+        <table class="slot-table" id="igv-slots-table">
+          <thead>
+            <tr>
+              <th>Project</th>
+              <th>Total Slots</th>
+              <th>Applications</th>
+              <th>Accepted</th>
+              
+            </tr>
+          </thead>
+          <tbody id="igv-slots-body">
+            <tr>
+              <td colspan="6">Loading project data...</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- IGTa Section -->
+    <h2 class="section-title">IGTa Performance</h2>
+    
+    <!-- IGTa Funnel Table -->
+    <div class="card">
+      <h3>IGTa Funnel Overview</h3>
+      <div class="table-responsive">
+        <table class="styled-table" id="igta-funnel-table">
+          <thead>
+            <tr>
+              <th>APP</th>
+              <th>APP ➝ ACC</th>
+              <th>ACC</th>
+              <th>ACC ➝ APD</th>
+              <th>APD</th>
+              <th>APD ➝ REA</th>
+              <th>REA</th>
+              <th>REA ➝ Finished</th>
+              <th>Finished</th>
+              <th>Finished ➝ COMP</th>
+              <th>COMP</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr id="igta-funnel-row" class="loading">
+              <td colspan="11">Loading data...</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- IGTa Timeline Chart -->
+    <div class="chart-container">
+      <div class="chart-header">
+        <h3>IGTa Stage Timeline (Peaks Over Time)</h3>
+        <div class="stage-selector">
+          <label for="igta-stage-select">View Stage:</label>
+          <select id="igta-stage-select">
+            <option value="all">All Stages</option>
+            <option value="APP">Application (APP)</option>
+            <option value="ACC">Accepted (ACC)</option>
+            <option value="APD">Approved (APD)</option>
+            <option value="REA">Realization (REA)</option>
+          </select>
+          <button class="view-all-btn" id="igta-view-all">View All</button>
+        </div>
+      </div>
+      <div class="chart-wrapper">
+        <canvas id="igtaTimelineChart" class="chart-canvas"></canvas>
+      </div>
+    </div>
+
+    <!-- IGTa Slots Table -->
+    <div class="card">
+      <h3>IGTa Sub-Products Slot Performance</h3>
+      <div class="table-responsive">
+        <table class="slot-table" id="igta-slots-table">
+          <thead>
+            <tr>
+              <th>Sub-Product</th>
+              <th>Total Slots</th>
+              <th>Applications</th>
+              <th>Accepted</th>
+            </tr>
+          </thead>
+          <tbody id="igta-slots-body">
+            <tr>
+              <td colspan="6">Loading sub-product data...</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Process Time Comparison -->
+    <div class="card">
+      <h3>Process Time Comparison (Days)</h3>
+      <div class="table-responsive">
+        <table class="styled-table" id="process-time-table">
+          <thead>
+            <tr>
+              <th rowspan="2">Product</th>
+              <th colspan="3">Process Stages</th>
+            </tr>
+            <tr>
+              <th>APP ➝ ACC</th>
+              <th>ACC ➝ APD</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr id="igv-process-times" class="process-card">
+              <td><strong>IGV</strong></td>
+              <td>Loading...</td>
+              <td>Loading...</td>
+            </tr>
+            <tr id="igta-process-times" class="process-card">
+              <td><strong>IGTa</strong></td>
+              <td>Loading...</td>
+              <td>Loading...</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const sidebar = document.querySelector('.sidebar');
+      const sidebarBtn = document.querySelector('.bx-menu');
+      const navLinks = document.querySelectorAll('.nav-links li');
+      
+      // Mobile detection
+      const isMobile = window.innerWidth <= 767;
+      
+      // Toggle Sidebar
+      function toggleSidebar() {
+        if (isMobile) {
+          sidebar.classList.toggle('open');
+        } else {
+          sidebar.classList.toggle('close');
+          localStorage.setItem('sidebarClosed', sidebar.classList.contains('close'));
+        }
+      }
+      
+      // Initialize sidebar state
+      function initSidebar() {
+        if (isMobile) {
+          sidebar.classList.remove('close');
+          sidebar.classList.remove('open');
+        } else {
+          const isClosed = localStorage.getItem('sidebarClosed') === 'true';
+          if (isClosed) {
+            sidebar.classList.add('close');
+          } else {
+            sidebar.classList.remove('close');
+          }
+        }
+      }
+      
+      // Set active nav link
+      function setActiveLink() {
+        navLinks.forEach(link => {
+          link.addEventListener('click', function(e) {
+            // Don't toggle if clicking on submenu arrow
+            if (e.target.classList.contains('arrow')) return;
+            
+            // Remove active class from all links
+            navLinks.forEach(item => item.classList.remove('active'));
+            // Add active class to clicked link
+            this.classList.add('active');
+            
+            // Store active link in localStorage
+            const linkName = this.querySelector('.link_name')?.textContent;
+            if (linkName) {
+              localStorage.setItem('activeLink', linkName);
+            }
+            
+            // Close sidebar on mobile after selection
+            if (isMobile) {
+              sidebar.classList.remove('open');
+            }
+          });
+        });
+        
+        // Restore active link from localStorage
+        const activeLinkName = localStorage.getItem('activeLink');
+        if (activeLinkName) {
+          navLinks.forEach(link => {
+            const linkNameElement = link.querySelector('.link_name');
+            if (linkNameElement && linkNameElement.textContent === activeLinkName) {
+              link.classList.add('active');
+            }
+          });
+        }
+      }
+      
+      // Handle submenu toggle
+      function handleSubmenu() {
+        const arrows = document.querySelectorAll('.arrow');
+        arrows.forEach(arrow => {
+          arrow.addEventListener('click', function(e) {
+            e.stopPropagation();
+            const li = this.parentElement.parentElement;
+            li.classList.toggle('showMenu');
+          });
+        });
+      }
+      
+      // Close sidebar when clicking outside on mobile
+      function setupOutsideClick() {
+        if (isMobile) {
+          document.addEventListener('click', function(e) {
+            if (!sidebar.contains(e.target) && !sidebarBtn.contains(e.target) && sidebar.classList.contains('open')) {
+              sidebar.classList.remove('open');
+            }
+          });
+        }
+      }
+      
+      // Initialize all sidebar functions
+      function initSidebarFunctions() {
+        initSidebar();
+        setActiveLink();
+        handleSubmenu();
+        setupOutsideClick();
+        
+        // Toggle sidebar when button is clicked
+        sidebarBtn.addEventListener('click', function(e) {
+          e.stopPropagation();
+          toggleSidebar();
+        });
+      }
+      
+      // Initialize everything
+      initSidebarFunctions();
+      
+      // Handle window resize
+      window.addEventListener('resize', function() {
+        const newIsMobile = window.innerWidth <= 767;
+        if (isMobile !== newIsMobile) {
+          // Reload the page when crossing the mobile threshold
+          window.location.reload();
+        }
+      });
+    });
+      
+      // Chart instances storage
+      const chartInstances = {
+        igv: null,
+        igta: null
+      };
+      
+      // Helper Functions
+      function getStageColor(stage) {
+        const colors = {
+          APP: "#ff7f0e",  // orange
+          ACC: "#2ca02c",  // green
+          APD: "#d62728",  // red
+          REA: "#9467bd",  // purple
+          FIN: "#8c564b",  // brown
+          COMP: "#17becf"  // teal
+        };
+        return colors[stage] || "#333";
+      }
+      
+      function formatNumber(num) {
+        return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+      }
+      
+      // Error Handling
+      function showError(element, message) {
+        const errorElement = document.createElement("div");
+        errorElement.className = "error-message";
+        errorElement.style.color = "#d62728";
+        errorElement.style.marginTop = "10px";
+        errorElement.textContent = message;
+        
+        element.parentNode.insertBefore(errorElement, element.nextSibling);
+      }
+      
+      // Data Fetching Functions
+      async function fetchData(url) {
+        try {
+          const response = await fetch(url);
+          
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+          
+          return await response.json();
+        } catch (error) {
+          console.error(`Error fetching data from ${url}:`, error);
+          throw error;
+        }
+      }
+
+// Enhanced IGV Slots Loader
+function loadIgvSlotsData() {
+    const endpoint = "/get_igv_slots_data/";
+    const tbody = document.getElementById('igv-slots-body');
+    
+    console.log("Fetching IGV slots data from:", endpoint);
+    
+    fetch(endpoint)
+        .then(response => {
+            if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+            return response.json();
+        })
+        .then(data => {
+            console.log("IGV slots data received:", data);
+            
+            tbody.innerHTML = ""; // Clear existing rows
+            
+            if (!Array.isArray(data)) {
+                console.error("IGV data is not an array:", data);
+                tbody.innerHTML = `<tr><td colspan="6" style="color: var(--danger)">Invalid data format</td></tr>`;
+                return;
+            }
+            
+            if (data.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6">No IGV projects found</td></tr>`;
+                return;
+            }
+            
+            data.forEach(project => {
+                // Format fulfillment rate
+                let fulfillmentRate = project.fulfillment;
+                let fulfillmentDisplay = "N/A";
+                let fulfillmentClass = "";
+                
+                if (fulfillmentRate !== null && !isNaN(fulfillmentRate)) {
+                    fulfillmentDisplay = fulfillmentRate.toFixed(1) + "%";
+                    
+                    // Determine fulfillment class
+                    if (fulfillmentRate >= 100) fulfillmentClass = "high-conversion";
+                    else if (fulfillmentRate >= 50) fulfillmentClass = "medium-conversion";
+                    else fulfillmentClass = "low-conversion";
+                }
+                
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td class="project-name">${project.project || 'Unknown'}</td>
+                    <td>${project.total_slots || 0}</td>
+                    <td>${project.total_applications || 0}</td>
+                    <td>${project.total_accepted || 0}</td>
+                    
+                `;
+                tbody.appendChild(row);
+            });
+        })
+        .catch(error => {
+            console.error("Error loading IGV slots:", error);
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="6" style="color: var(--danger)">
+                        Failed to load IGV slots: ${error.message}
+                    </td>
+                </tr>
+            `;
+        });
+}
+
+// Enhanced IGTA Slots Loader
+function loadIgtasSlotsData() {
+    const endpoint = "/get_igta_slots_data/";
+    const tbody = document.getElementById('igta-slots-body');
+    
+    console.log("Fetching IGTA slots data from:", endpoint);
+    
+    fetch(endpoint)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            console.log("IGTA slots data received:", data);
+            
+            tbody.innerHTML = ""; // Clear existing rows
+            
+            if (data.error) {
+                console.error("IGTA slots error:", data.error);
+                tbody.innerHTML = `<tr><td colspan="6" style="color: var(--danger)">${data.error}</td></tr>`;
+                return;
+            }
+            
+            if (!Array.isArray(data)) {
+                console.error("IGTA data is not an array:", data);
+                tbody.innerHTML = `<tr><td colspan="6" style="color: var(--danger)">Invalid data format</td></tr>`;
+                return;
+            }
+            
+            if (data.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6">No IGTA sub-products found</td></tr>`;
+                return;
+            }
+            
+            data.forEach(subProduct => {
+                const fulfillment = calculateFulfillment(
+                    subProduct.total_approved || subProduct.total_fulfilled || 0,
+                    subProduct.total_slots || 0
+                );
+                
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td class="project-name">${subProduct.sub_product_name || subProduct.name || 'Unknown'}</td>
+                    <td>${subProduct.total_slots || 0}</td>
+                    <td>${subProduct.total_applications || 0}</td>
+                    <td>${subProduct.total_accepted || 0}</td>
+                `;
+                tbody.appendChild(row);
+            });
+        })
+        .catch(error => {
+            console.error("Error loading IGTA slots:", error);
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="6" style="color: var(--danger)">
+                        Failed to load IGTA slots: ${error.message}
+                    </td>
+                </tr>
+            `;
+        });
+}
+
+// Helper function to calculate fulfillment rate and class
+function calculateFulfillment(approved, slots) {
+    if (slots <= 0) return { rate: 0, class: 'low-conversion' };
+    
+    const rate = Math.round((approved / slots) * 100);
+    let rateClass = 'low-conversion';
+    
+    if (rate >= 70) rateClass = 'high-conversion';
+    else if (rate >= 40) rateClass = 'medium-conversion';
+    
+    return { rate, class: rateClass };
+}
+// Helper function to create a new row for a slot table
+function createSlotRow(name, totalSlots, applications, fulfilled, accepted, fulfillmentRate) {
+    const row = document.createElement("tr");
+    
+    // Determine fulfillment rate class
+    let fulfillmentClass = "";
+    if (fulfillmentRate && !isNaN(fulfillmentRate)) {
+        const rateNum = parseFloat(fulfillmentRate);
+        if (rateNum >= 70) fulfillmentClass = "high-conversion";
+        else if (rateNum >= 40) fulfillmentClass = "medium-conversion";
+        else fulfillmentClass = "low-conversion";
+    }
+
+    row.innerHTML = `
+        <td class="project-name">${name}</td>
+        <td>${totalSlots}</td>
+        <td>${applications}</td>
+        <td>${fulfilled}</td>
+        <td>${accepted}</td>
+        <td class="${fulfillmentClass}">
+            ${fulfillmentRate}${typeof fulfillmentRate === 'number' ? '%' : ''}
+        </td>
+    `;
+    return row;
+}
+// Function to add an error row when there's an issue
+function addRowToTable(tbody, projectName, totalSlots, applications, fulfilled, accepted) {
+    const errorRow = document.createElement("tr");
+    errorRow.innerHTML = `
+        <td>${projectName}</td>
+        <td>${totalSlots}</td>
+        <td>${applications}</td>
+        <td>${fulfilled}</td>
+        <td>${accepted}</td>
+        <td>---</td>
+    `;
+    tbody.appendChild(errorRow);
+}
+
+// Call the functions for both IGV and IGTA slots data
+loadIgvSlotsData('/get_igv_slots_data/');
+loadIgtasSlotsData('/get_igta_slots_data/');
+
+
+      
+      // Funnel Data Processing
+      function processFunnelData(funnel) {
+        const stages = ["APP", "ACC", "APD", "REA", "FIN", "COMP"];
+        const counts = stages.map(stage => funnel[stage] || 0);
+        
+        let html = "";
+        for (let i = 0; i < stages.length; i++) {
+          html += `<td><strong>${formatNumber(counts[i])}</strong></td>`;
+          if (i < stages.length - 1) {
+            const conv = counts[i] ? ((counts[i + 1] / counts[i]) * 100).toFixed(1) : "0.0";
+            const color = counts[i] > 0 ? (counts[i + 1] / counts[i] > 0.5 ? "color: var(--success)" : "color: var(--danger)") : "";
+            html += `<td style="${color}">${conv}%</td>`;
+          }
+        }
+        
+        return html;
+      }
+      
+      // Filter dataset for single stage view
+      function filterDataset(datasets, stage) {
+        return datasets.map(dataset => {
+          return {
+            ...dataset,
+            hidden: dataset.label.indexOf(stage) === -1
+          };
+        });
+      }
+      
+      // Timeline Chart Creation
+      function createTimelineChart(ctx, labels, data, title, chartId) {
+        const datasets = [
+          {
+            label: "APP",
+            data: data.map(entry => entry.APP || 0),
+            borderColor: getStageColor("APP"),
+            backgroundColor: getStageColor("APP"),
+            borderWidth: 2,
+            fill: false,
+            tension: 0.4
+          },
+          {
+            label: "ACC",
+            data: data.map(entry => entry.ACC || 0),
+            borderColor: getStageColor("ACC"),
+            backgroundColor: getStageColor("ACC"),
+            borderWidth: 2,
+            fill: false,
+            tension: 0.4
+          },
+          {
+            label: "APD",
+            data: data.map(entry => entry.APD || 0),
+            borderColor: getStageColor("APD"),
+            backgroundColor: getStageColor("APD"),
+            borderWidth: 2,
+            fill: false,
+            tension: 0.4
+          },
+          {
+            label: "REA",
+            data: data.map(entry => entry.REA || 0),
+            borderColor: getStageColor("REA"),
+            backgroundColor: getStageColor("REA"),
+            borderWidth: 2,
+            fill: false,
+            tension: 0.4
+          }
+        ];
+      
+        const chart = new Chart(ctx, {
+          type: "line",
+          data: {
+            labels: labels,
+            datasets: datasets
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              title: {
+                display: true,
+                text: title,
+                font: {
+                  size: 16,
+                  weight: 'bold'
+                },
+                padding: {
+                  top: -10,
+                  bottom: 20
+                }
+              },
+              tooltip: {
+                mode: "index",
+                intersect: false,
+                backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                titleFont: {
+                  size: 14,
+                  weight: 'bold'
+                },
+                bodyFont: {
+                  size: 13
+                },
+                padding: 12,
+                cornerRadius: 8
+              },
+              legend: {
+                position: "top",
+                labels: {
+                  padding: 20,
+                  usePointStyle: true,
+                  pointStyle: 'circle',
+                  font: {
+                    size: 12
+                  }
+                }
+              }
+            },
+            interaction: {
+              mode: "nearest",
+              axis: "x",
+              intersect: false
+            },
+            scales: {
+              x: {
+                grid: {
+                  display: false
+                },
+                title: {
+                  display: true,
+                  text: "Date",
+                  font: {
+                    weight: 'bold'
+                  }
+                }
+              },
+              y: {
+                beginAtZero: true,
+                title: {
+                  display: true,
+                  text: "Count",
+                  font: {
+                    weight: 'bold'
+                  }
+                }
+              }
+            },
+            elements: {
+              point: {
+                radius: 4,
+                hoverRadius: 6,
+                backgroundColor: 'white',
+                borderWidth: 2
+              },
+              line: {
+                borderWidth: 2
+              }
+            }
+          }
+        });
+      
+        // Store chart instance
+        chartInstances[chartId] = chart;
+        return chart;
+      }
+      
+      // Setup stage selectors
+      function setupStageSelectors() {
+          // IGV Chart Selector
+          document.getElementById('igv-stage-select').addEventListener('change', function() {
+            const selectedStage = this.value;
+            const chart = chartInstances.igv;
+            
+            if (selectedStage === 'all') {
+              chart.data.datasets.forEach(dataset => {
+                dataset.hidden = false;
+              });
+            } else {
+              chart.data.datasets.forEach(dataset => {
+                dataset.hidden = dataset.label.indexOf(selectedStage) === -1;
+              });
+            }
+            
+            chart.update();
+          });
+      
+          // IGV View All Button
+          document.getElementById('igv-view-all').addEventListener('click', function() {
+            document.getElementById('igv-stage-select').value = 'all';
+            const chart = chartInstances.igv;
+            chart.data.datasets.forEach(dataset => {
+              dataset.hidden = false;
+            });
+            chart.update();
+          });
+      
+          // iGTa Chart Selector
+          document.getElementById('igta-stage-select').addEventListener('change', function() {
+            const selectedStage = this.value;
+            const chart = chartInstances.igta;
+            
+            if (selectedStage === 'all') {
+              chart.data.datasets.forEach(dataset => {
+                dataset.hidden = false;
+              });
+            } else {
+              chart.data.datasets.forEach(dataset => {
+                dataset.hidden = dataset.label.indexOf(selectedStage) === -1;
+              });
+            }
+            
+            chart.update();
+          });
+      
+          // iGTa View All Button
+          document.getElementById('igta-view-all').addEventListener('click', function() {
+            document.getElementById('igta-stage-select').value = 'all';
+            const chart = chartInstances.igta;
+            chart.data.datasets.forEach(dataset => {
+              dataset.hidden = false;
+            });
+            chart.update();
+          });
+      }
+  
+      
+
+
+
+    
+    // Call the function for each product
+    
+    
+      
+  
+      function loadProcessTimes(endpoint, containerId) {
+        fetch(endpoint)
+            .then(res => res.json())
+            .then(data => {
+                if (data.error) {
+                    document.getElementById(containerId).children[1].textContent = "Error";
+                    document.getElementById(containerId).children[2].textContent = "-";
+                    return;
+                }
+    
+                const row = document.getElementById(containerId);
+                row.children[1].textContent = data.APP_to_ACC_days || "-";
+                row.children[2].textContent = data.ACC_to_APD_days || "-";
+            })
+            .catch(err => {
+                const row = document.getElementById(containerId);
+                row.children[1].textContent = "Fetch error";
+                row.children[2].textContent = "-";
+                console.error(err);
+            });
+    }
+    
+    // Call the function for each product
+    loadProcessTimes('/igv_process_times/', 'igv-process-times');
+    loadProcessTimes('/igta_process_times/', 'igta-process-times');
+    
+    
+    
+    
+      
+  
+      // Data Fetching and Display
+      async function initializeDashboard() {
+        console.log("Initializing dashboard...");
+    
+        try {
+            // Fetch all data in parallel
+            const [igvFunnel, igtaFunnel, igvTimeline, igtaTimeline] = await Promise.all([
+                fetchData("/get_igv_funnel/"),
+                fetchData("/get_igta_funnel/"),
+                fetchData("/get_igv_timeline/"),
+                fetchData("/get_igta_timeline/")
+            ]);
+            
+            console.log("Data fetched successfully.");
+    
+            // Log the data for debugging
+            console.log("IGV Funnel:", igvFunnel);
+            console.log("IGTA Funnel:", igtaFunnel);
+            console.log("IGV Timeline:", igvTimeline);
+            console.log("IGTA Timeline:", igtaTimeline);
+    
+            // Process and render funnel data
+            if (igvFunnel && igvFunnel.igv_funnel) {
+                document.getElementById("igv-funnel-row").innerHTML = processFunnelData(igvFunnel.igv_funnel);
+            } else {
+                console.error("Error: IGV funnel data is missing or malformed.");
+                document.getElementById("igv-funnel-row").innerHTML = "<td colspan='13' style='color: var(--danger)'>Error loading IGV funnel data.</td>";
+            }
+    
+            if (igtaFunnel && igtaFunnel.igta_funnel) {
+                document.getElementById("igta-funnel-row").innerHTML = processFunnelData(igtaFunnel.igta_funnel);
+            } else {
+                console.error("Error: IGTA funnel data is missing or malformed.");
+                document.getElementById("igta-funnel-row").innerHTML = "<td colspan='13' style='color: var(--danger)'>Error loading IGTA funnel data.</td>";
+            }
+    
+            // Timeline Chart creation
+            console.log("Creating Timeline Charts...");
+            createTimelineChart(
+                document.getElementById("igvTimelineChart"),
+                igvTimeline.timeline.map(entry => entry.date),
+                igvTimeline.timeline,
+                "",
+                "igv"
+            );
+    
+            createTimelineChart(
+                document.getElementById("igtaTimelineChart").getContext("2d"),
+                igtaTimeline.timeline.map(entry => entry.date),
+                igtaTimeline.timeline,
+                "",
+                "igta"
+            );
+    
+            // Setup stage selectors
+            setupStageSelectors();
+            loadIgvSlotsData();
+
+            
+    
+        } catch (error) {
+            console.error("Error initializing dashboard:", error);
+    
+            // Display generic error message in case of failure
+            const errorMessage = "Failed to load data. Please try again later.";
+            document.querySelectorAll("#igv-funnel-row, #igta-funnel-row").forEach(row => {
+                row.innerHTML = `<td colspan="13" style="color: var(--danger)">${errorMessage}</td>`;
+                row.classList.remove("loading");
+            });
+        }
+    
+        
+    
+        fetchAllProcessTimes();
+        console.log("Dashboard initialization complete.");
+    }
+    
+  
+      // Initialize the dashboard when the DOM is fully loaded
+      document.addEventListener("DOMContentLoaded", initializeDashboard);
+  </script>
+
+   
+</body>
+</html>

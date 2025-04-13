@@ -1,0 +1,845 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>AIESEC in Egypt Analytics</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://unpkg.com/boxicons@2.0.7/css/boxicons.min.css" rel="stylesheet" />
+  {% load static %}
+
+  <style>
+    :root {
+      --primary: #0a3d62;
+      --primary-light: #1e5a8a;
+      --secondary: #00b4d8;
+      --accent: #90e0ef;
+      --dark: #0d1b2a;
+      --light: #e0f2f1;
+      --white: #ffffff;
+      --success: #2ca02c;
+      --warning: #ff7f0e;
+      --danger: #d62728;
+      --info: #9467bd;
+      
+      --sidebar-width: 280px;
+      --sidebar-collapsed: 80px;
+      --transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.1);
+      
+      --card-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+      --card-hover: 0 12px 40px rgba(0, 180, 216, 0.15);
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: linear-gradient(135deg, #f0f8ff 0%, #e6f7ff 100%);
+      color: var(--dark);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* Enhanced Sidebar */
+    .sidebar {
+      position: fixed;
+      height: 100vh;
+      width: var(--sidebar-width);
+      background: var(--primary);
+      transition: var(--transition);
+      overflow-y: auto;
+      z-index: 1000;
+      box-shadow: 4px 0 20px rgba(0, 0, 0, 0.1);
+      display: flex;
+      flex-direction: column;
+    }
+
+    .sidebar.close {
+      width: var(--sidebar-collapsed);
+    }
+
+    .logo-details {
+      height: 80px;
+      min-height: 80px;
+      display: flex;
+      align-items: center;
+      padding: 0 20px;
+      position: relative;
+      transition: var(--transition);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      flex-shrink: 0;
+    }
+
+    .sidebar.close .logo-details {
+      padding: 0 10px;
+    }
+
+    .logo-details i {
+      font-size: 30px;
+      color: var(--white);
+      min-width: 50px;
+      transition: var(--transition);
+      text-align: center;
+    }
+
+    .logo-icon {
+      height: 45px;
+      width: 45px;
+      margin-right: 15px;
+      transition: var(--transition);
+      filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
+      flex-shrink: 0;
+    }
+
+    .sidebar.close .logo-icon {
+      margin-right: 0;
+      transform: scale(0.9);
+    }
+
+    .logo_name {
+      font-size: 22px;
+      color: var(--white);
+      font-weight: 700;
+      white-space: nowrap;
+      opacity: 1;
+      transition: var(--transition);
+      letter-spacing: 0.5px;
+      overflow: hidden;
+    }
+
+    .sidebar.close .logo_name {
+      opacity: 0;
+      width: 0;
+      margin: 0;
+    }
+
+    .nav-links {
+      flex: 1;
+      overflow-y: auto;
+      padding: 20px 10px;
+      margin: 0;
+      scrollbar-width: thin;
+      scrollbar-color: var(--primary-light) var(--primary);
+    }
+
+    .nav-links::-webkit-scrollbar {
+      width: 5px;
+    }
+
+    .nav-links::-webkit-scrollbar-track {
+      background: var(--primary);
+    }
+
+    .nav-links::-webkit-scrollbar-thumb {
+      background-color: var(--primary-light);
+      border-radius: 5px;
+    }
+
+    .nav-links li {
+      position: relative;
+      list-style: none;
+      height: 50px;
+      line-height: 50px;
+      margin: 5px 0;
+      padding: 0 15px;
+      border-radius: 8px;
+      transition: var(--transition);
+    }
+
+    .sidebar.close .nav-links li {
+      padding: 0 10px;
+      justify-content: center;
+    }
+
+    .nav-links li:hover {
+      background: var(--primary-light);
+    }
+
+    .nav-links li.active {
+      background: var(--secondary);
+    }
+
+    .nav-links li a {
+      display: flex;
+      align-items: center;
+      text-decoration: none;
+      color: var(--white);
+      transition: var(--transition);
+      height: 100%;
+      width: 100%;
+    }
+
+    .nav-links li i {
+      font-size: 22px;
+      min-width: 70px;
+      text-align: center;
+      transition: var(--transition);
+    }
+
+    .sidebar.close .nav-links li i {
+      min-width: auto;
+      font-size: 24px;
+    }
+
+    .link_name {
+      font-weight: 500;
+      letter-spacing: 0.5px;
+      white-space: nowrap;
+      transition: var(--transition);
+    }
+
+    .sidebar.close .link_name {
+      opacity: 0;
+      width: 0;
+      height: 0;
+      overflow: hidden;
+    }
+
+    .sub-menu {
+      padding-left: 20px;
+      background: var(--primary-light);
+      border-radius: 8px;
+      display: none;
+      transition: var(--transition);
+      margin: 5px 0;
+      overflow: hidden;
+    }
+
+    .sidebar.close .sub-menu {
+      display: none !important;
+    }
+
+    /* Submenu arrow */
+    .arrow {
+      position: absolute;
+      right: 15px;
+      top: 50%;
+      transform: translateY(-50%);
+      transition: var(--transition);
+      color: var(--white);
+      font-size: 18px;
+      cursor: pointer;
+    }
+    
+    .sidebar.close .arrow {
+      display: none;
+    }
+    
+    li.showMenu .sub-menu {
+      display: block;
+    }
+    
+    li.showMenu .arrow {
+      transform: translateY(-50%) rotate(180deg);
+    }
+
+    /* Main Content Area */
+    .home-section {
+      position: relative;
+      left: var(--sidebar-collapsed); /* Start with collapsed sidebar */
+      width: calc(100% - var(--sidebar-collapsed));
+      transition: var(--transition);
+      padding: 15px; /* Less padding */
+      min-height: 100vh;
+    }
+
+    .sidebar.open ~ .home-section {
+      left: var(--sidebar-width);
+      width: calc(100% - var(--sidebar-width));
+    }
+
+    .home-content {
+      display: flex;
+      align-items: center;
+      gap: 10px; /* Less gap */
+      font-size: 20px; /* Smaller font */
+      font-weight: 700;
+      color: var(--dark);
+      margin-bottom: 20px; /* Less margin */
+    }
+
+    .home-content i {
+      font-size: 24px; /* Smaller icon */
+      cursor: pointer;
+      color: var(--primary);
+      transition: all 0.3s ease;
+    }
+
+    .text {
+      white-space: nowrap;
+      background: linear-gradient(90deg, var(--primary), var(--secondary));
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      font-weight: 700;
+      font-size: 18px; /* Smaller text */
+    }
+
+    
+
+    /* Modern Cards */
+    .card {
+      margin: 20px 0; /* Less margin */
+      background: var(--white);
+      padding: 20px; /* Less padding */
+      border-radius: 2px; /* Slightly smaller radius */
+      box-shadow: var(--card-shadow);
+      transition: var(--transition);
+      
+      border: 1px solid rgba(0, 0, 0, 0.05);
+    }
+
+    .card:hover {
+      box-shadow: var(--card-hover);
+      transform: translateY(-5px);
+    }
+
+    .card h3 {
+      font-size: 18px; /* Smaller heading */
+      margin-bottom: 15px; /* Less margin */
+      color: var(--primary);
+      position: relative;
+      padding-bottom: 8px; /* Less padding */
+    }
+
+    .card h3::after {
+      content: '';
+      position: absolute;
+      left: 0;
+      bottom: 0;
+      width: 40px; /* Shorter underline */
+      height: 2px; /* Thinner line */
+    }
+    /* Enhanced Tables */
+    .table-responsive {
+      width: 100%;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
+      margin: 15px 0;
+    }
+
+    .styled-table {
+      width: 100%;
+      min-width: 600px; /* Minimum width for scrollable tables */
+      border-collapse: separate;
+      border-spacing: 0;
+      font-size: 13px; /* Smaller font */
+      text-align: center;
+      overflow: hidden;
+      border-radius: 10px; /* Smaller radius */
+    }
+
+
+    .styled-table th, .styled-table td {
+      padding: 14px 16px;
+      border: 1px solid rgba(0, 0, 0, 0.05);
+    }
+
+    .styled-table thead {
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+      color: var(--white);
+      position: sticky;
+      top: 0;
+    }
+
+    .styled-table th {
+      font-weight: 600;
+      letter-spacing: 0.3px; /* Less spacing */
+      text-transform: uppercase;
+      font-size: 12px; /* Smaller font */
+    }
+
+
+    .styled-table tbody tr:nth-child(even) {
+      background-color: rgba(240, 248, 255, 0.5);
+    }
+
+
+    .loading {
+      color: #666;
+      font-style: italic;
+    }
+
+    .error {
+      color: var(--danger);
+      font-weight: 500;
+    }
+  
+    /* Loading State */
+    .loading {
+      position: relative;
+      color: transparent !important;
+    }
+    
+    .loading::after {
+      content: "";
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 20px;
+      height: 20px;
+      border: 3px solid rgba(0, 0, 0, 0.1);
+      border-top-color: var(--primary);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: translate(-50%, -50%) rotate(360deg); }
+    }
+
+    /* Media Queries for Larger Screens */
+    @media (min-width: 768px) {
+      body {
+        font-size: 15px; /* Slightly larger base font */
+      }
+
+      .sidebar {
+        width: var(--sidebar-width); /* Full sidebar by default */
+      }
+
+      .sidebar.close {
+        width: var(--sidebar-collapsed);
+      }
+
+      .home-section {
+        left: var(--sidebar-width);
+        width: calc(100% - var(--sidebar-width));
+        padding: 20px;
+      }
+
+      .sidebar.close ~ .home-section {
+        left: var(--sidebar-collapsed);
+        width: calc(100% - var(--sidebar-collapsed));
+      }
+
+      .home-content {
+        font-size: 24px;
+      }
+
+      .text {
+        font-size: 22px;
+      }
+
+      .card {
+        padding: 25px;
+      }
+
+      .card h3 {
+        font-size: 20px;
+      }
+
+      
+
+      .stage-selector {
+        margin-left: auto; /* Push to right */
+        justify-content: flex-end; /* Align right */
+      }
+    }
+
+    @media (min-width: 992px) {
+      .sidebar {
+        width: var(--sidebar-width);
+      }
+
+      .sidebar.close:hover {
+        width: var(--sidebar-width);
+      }
+
+      .sidebar.close:hover .logo_name,
+      .sidebar.close:hover .link_name {
+        opacity: 1;
+        width: auto;
+      }
+
+      .home-content {
+        font-size: 28px;
+      }
+
+      .text {
+        font-size: 26px;
+      }
+
+      
+    }
+
+    /* Mobile-specific styles */
+    @media (max-width: 767px) {
+      /* Show mobile menu toggle button */
+      .mobile-menu-toggle {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .card {
+        margin: 15px -15px;
+        border-radius: 0;
+        padding: 15px;
+      }
+
+      
+      .sidebar {
+        transform: translateX(-100%);
+        width: 280px;
+
+      }
+
+      .sidebar.open {
+        transform: translateX(0);
+        height: 100%;
+
+      }
+
+      .home-section {
+        left: 0;
+        width: 100%;
+      }
+    }
+    
+    /* Very small mobile devices */
+    @media (max-width: 480px) {
+      .home-content {
+        font-size: 18px;
+      }
+      
+      .card {
+        margin: 15px -10px;
+        border-radius: 0;
+        padding: 15px;
+      }
+      
+      .text {
+        font-size: 16px;
+      }
+
+      .card h3 {
+        font-size: 16px;
+      }
+      
+      /* Mobile menu toggle */
+      .home-content i.bx-menu {
+        display: block !important;
+      }
+      
+      /* Sidebar behavior for mobile */
+      .sidebar {
+        transform: translateX(-100%);
+        width: 260px;
+      }
+      
+      .sidebar.open {
+        transform: translateX(0);
+      }
+      
+      .sidebar.close {
+        transform: translateX(-100%);
+      }
+      
+      .home-section {
+        left: 0;
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="sidebar">
+    <div class="logo-details">
+      <img src="{% static 'image/blueman.png' %}" class="logo-icon" alt="AIESEC Logo" />
+      <span class="logo_name">AIESEC in Egypt</span>
+    </div>
+  
+    <ul class="nav-links">
+      <li class="active">
+        <a href="#">
+          <i class="bx bx-grid-alt"></i>
+          <span class="link_name">Dashboard</span>
+        </a>
+        <ul class="sub-menu blank">
+          <li><a class="link_name" href="/">Dashboard</a></li>
+        </ul>
+      </li>
+      
+      <li>
+        <div class="iocn-link">
+          <a href="#">
+            <i class="bx bx-line-chart"></i>
+            <span class="link_name">Analytics</span>
+          </a>
+          <i class="bx bxs-chevron-down arrow"></i>
+        </div>
+        <ul class="sub-menu">
+          <li><a href="/analytics_OGX/">OGX Analytics</a></li>
+          <li><a href="/analytics_ICX/">ICX Analytics</a></li>
+        </ul>
+      </li>
+    </ul>
+  </div>
+
+  <section class="home-section">
+    <div class="home-content">
+      <i class="bx bx-menu"></i>
+      <span class="text">AIESEC in Tanta Dashboard</span>
+    </div>
+
+    <!-- Consolidated Funnel Table -->
+    <div class="card">
+      <h3>All Products Funnel Performance</h3>
+      <div class="table-responsive">
+        <table class="styled-table" id="all-products-funnel">
+          <thead>
+            <tr>
+              <th>Product</th>
+              <th>SUs</th>
+              <th>SUs ➝ APP</th>
+              <th>APP</th>
+              <th>APP ➝ ACC</th>
+              <th>ACC</th>
+              <th>ACC ➝ APD</th>
+              <th>APD</th>
+              <th>APD ➝ REA</th>
+              <th>REA</th>
+              <th>REA ➝ Finished</th>
+              <th>Finished</th>
+              <th>Finished ➝ COMP</th>
+              <th>COMP</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr id="ogv-funnel-row" class="loading">
+              <td><strong>OGV</strong></td>
+              <td colspan="12">Loading data...</td>
+            </tr>
+            <tr id="ogta-funnel-row" class="loading">
+              <td><strong>OGTa</strong></td>
+              <td colspan="12">Loading data...</td>
+            </tr>
+            <tr id="ogte-funnel-row" class="loading">
+              <td><strong>OGTe</strong></td>
+              <td colspan="12">Loading data...</td>
+            </tr>
+            <tr id="igv-funnel-row" class="loading">
+              <td><strong>IGV</strong></td>
+              <td colspan="12">Loading data...</td>
+            </tr>
+            <tr id="igta-funnel-row" class="loading">
+              <td><strong>IGTa</strong></td>
+              <td colspan="12">Loading data...</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const sidebar = document.querySelector('.sidebar');
+      const sidebarBtn = document.querySelector('.bx-menu');
+      const navLinks = document.querySelectorAll('.nav-links li');
+      
+      // Mobile detection
+      const isMobile = window.innerWidth <= 767;
+      
+      // Toggle Sidebar
+      function toggleSidebar() {
+        if (isMobile) {
+          sidebar.classList.toggle('open');
+        } else {
+          sidebar.classList.toggle('close');
+          localStorage.setItem('sidebarClosed', sidebar.classList.contains('close'));
+        }
+      }
+      
+      // Initialize sidebar state
+      function initSidebar() {
+        if (isMobile) {
+          sidebar.classList.remove('close');
+          sidebar.classList.remove('open');
+        } else {
+          const isClosed = localStorage.getItem('sidebarClosed') === 'true';
+          if (isClosed) {
+            sidebar.classList.add('close');
+          } else {
+            sidebar.classList.remove('close');
+          }
+        }
+      }
+      
+      // Set active nav link
+      function setActiveLink() {
+        navLinks.forEach(link => {
+          link.addEventListener('click', function(e) {
+            // Don't toggle if clicking on submenu arrow
+            if (e.target.classList.contains('arrow')) return;
+            
+            // Remove active class from all links
+            navLinks.forEach(item => item.classList.remove('active'));
+            // Add active class to clicked link
+            this.classList.add('active');
+            
+            // Store active link in localStorage
+            const linkName = this.querySelector('.link_name')?.textContent;
+            if (linkName) {
+              localStorage.setItem('activeLink', linkName);
+            }
+            
+            // Close sidebar on mobile after selection
+            if (isMobile) {
+              sidebar.classList.remove('open');
+            }
+          });
+        });
+        
+        // Restore active link from localStorage
+        const activeLinkName = localStorage.getItem('activeLink');
+        if (activeLinkName) {
+          navLinks.forEach(link => {
+            const linkNameElement = link.querySelector('.link_name');
+            if (linkNameElement && linkNameElement.textContent === activeLinkName) {
+              link.classList.add('active');
+            }
+          });
+        }
+      }
+      
+      // Handle submenu toggle
+      function handleSubmenu() {
+        const arrows = document.querySelectorAll('.arrow');
+        arrows.forEach(arrow => {
+          arrow.addEventListener('click', function(e) {
+            e.stopPropagation();
+            const li = this.parentElement.parentElement;
+            li.classList.toggle('showMenu');
+          });
+        });
+      }
+      
+      // Close sidebar when clicking outside on mobile
+      function setupOutsideClick() {
+        if (isMobile) {
+          document.addEventListener('click', function(e) {
+            if (!sidebar.contains(e.target) && !sidebarBtn.contains(e.target) && sidebar.classList.contains('open')) {
+              sidebar.classList.remove('open');
+            }
+          });
+        }
+      }
+      
+      // Initialize all sidebar functions
+      function initSidebarFunctions() {
+        initSidebar();
+        setActiveLink();
+        handleSubmenu();
+        setupOutsideClick();
+        
+        // Toggle sidebar when button is clicked
+        sidebarBtn.addEventListener('click', function(e) {
+          e.stopPropagation();
+          toggleSidebar();
+        });
+      }
+      
+      // Initialize everything
+      initSidebarFunctions();
+      
+      // Handle window resize
+      window.addEventListener('resize', function() {
+        const newIsMobile = window.innerWidth <= 767;
+        if (isMobile !== newIsMobile) {
+          // Reload the page when crossing the mobile threshold
+          window.location.reload();
+        }
+      });
+    });
+
+    // Helper Functions
+    function formatNumber(num) {
+      return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+    }
+
+    // Data Fetching Functions
+    async function fetchData(url) {
+      try {
+        const response = await fetch(url);
+        
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        return await response.json();
+      } catch (error) {
+        console.error(`Error fetching data from ${url}:`, error);
+        throw error;
+      }
+    }
+
+    // Funnel Data Processing
+    function processFunnelData(funnel, productName) {
+      funnel["SUs"] = funnel["Signups"] || 0;
+      const stages = ["SUs", "APP", "ACC", "APD", "REA", "FIN", "COMP"];
+      const counts = stages.map(stage => funnel[stage] || 0);
+      
+      let html = `<td><strong>${productName}</strong></td>`;
+      for (let i = 0; i < stages.length; i++) {
+        html += `<td><strong>${formatNumber(counts[i])}</strong></td>`;
+        if (i < stages.length - 1) {
+          const conv = counts[i] ? ((counts[i + 1] / counts[i]) * 100).toFixed(1) : "0.0";
+          const color = counts[i] > 0 ? (counts[i + 1] / counts[i] > 0.5 ? "color: var(--success)" : "color: var(--danger)") : "";
+          html += `<td style="${color}">${conv}%</td>`;
+        }
+      }
+      
+      return html;
+    }
+
+    // Data Fetching and Display
+    async function initializeDashboard() {
+      try {
+        // Fetch all data in parallel
+        const [ogvFunnel, ogtaFunnel, ogteFunnel, igvFunnel, igtaFunnel] = await Promise.all([
+          fetchData("/get_ogv_funnel/"),
+          fetchData("/get_ogta_funnel/"),
+          fetchData("/get_ogte_funnel/"),
+          fetchData("/get_igv_funnel/"),
+          fetchData("/get_igta_funnel/")
+        ]);
+
+        // Process funnel data for all products
+        document.getElementById("ogv-funnel-row").innerHTML = processFunnelData(ogvFunnel.ogv_funnel, "OGV");
+        document.getElementById("ogta-funnel-row").innerHTML = processFunnelData(ogtaFunnel.ogta_funnel, "OGTa");
+        document.getElementById("ogte-funnel-row").innerHTML = processFunnelData(ogteFunnel.ogte_funnel, "OGTe");
+        document.getElementById("igv-funnel-row").innerHTML = processFunnelData(igvFunnel.igv_funnel, "IGV");
+        document.getElementById("igta-funnel-row").innerHTML = processFunnelData(igtaFunnel.igta_funnel, "IGTa");
+
+        // Remove loading class from all funnel rows
+        document.querySelectorAll("#ogv-funnel-row, #ogta-funnel-row, #ogte-funnel-row, #igv-funnel-row, #igta-funnel-row").forEach(row => {
+          row.classList.remove("loading");
+        });
+
+      } catch (error) {
+        console.error("Error initializing dashboard:", error);
+        
+        // Show error messages
+        const errorMessage = "Failed to load data. Please try again later.";
+        document.querySelectorAll("#ogv-funnel-row, #ogta-funnel-row, #ogte-funnel-row, #igv-funnel-row, #igta-funnel-row").forEach(row => {
+          row.innerHTML = `<td class="error" colspan="13">${errorMessage}</td>`;
+          row.classList.remove("loading");
+        });
+      }
+    }
+
+    // Initialize the dashboard when the DOM is fully loaded
+    document.addEventListener("DOMContentLoaded", initializeDashboard);
+
+    // Refresh data every 5 minutes
+    setInterval(initializeDashboard, 300000);
+  </script>
+</body>
+</html>
